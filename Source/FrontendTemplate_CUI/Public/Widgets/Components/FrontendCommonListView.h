@@ -7,11 +7,12 @@
 #include "FrontendCommonListView.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class FRONTENDTEMPLATE_CUI_API UFrontendCommonListView : public UCommonListView
 {
 	GENERATED_BODY()
-	
+
+
 };

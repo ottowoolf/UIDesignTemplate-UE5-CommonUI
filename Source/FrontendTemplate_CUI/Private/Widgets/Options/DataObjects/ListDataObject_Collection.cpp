@@ -13,7 +13,7 @@ void UListDataObject_Collection::AddChildListData(UListDataObject_Base* InChildL
 	ChildListDataArray.Add(InChildListData);
 }
 
-TArray<UListDataObject_Base*> UListDataObject_Collection::GetAllChildSettingData() const
+TArray<UListDataObject_Base*> UListDataObject_Collection::GetAllChildListData() const
 {
 	return ChildListDataArray;
 }

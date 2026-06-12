@@ -20,7 +20,7 @@ public:
 
 
 	//~ Begin UListDataObject_Base Interface
-	virtual TArray<UListDataObject_Base*> GetAllChildSettingData() const;
+	virtual TArray<UListDataObject_Base*> GetAllChildListData() const;
 	virtual bool HasAnyChildListData() const;
 	//~ End UListDataObject_Base Interface
 
