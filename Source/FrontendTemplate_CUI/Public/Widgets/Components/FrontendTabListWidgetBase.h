@@ -16,6 +16,9 @@ class FRONTENDTEMPLATE_CUI_API UFrontendTabListWidgetBase : public UCommonTabLis
 {
 	GENERATED_BODY()
 
+public:
+	void RequestRegisterTab(const FName& InTabID, const FText& InTabDisplayName);
+
 private:
 
 	//~ Begin UWidget Interface
