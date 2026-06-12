@@ -28,6 +28,7 @@ private:
 	void InitAudioCollectionTab();
 	void InitVideoCollectionTab();
 	void InitControlCollectionTab();
+	void InitAccessibilityCollectionTab();
 
 	UPROPERTY(Transient)
 	TArray<UListDataObject_Collection*> RegisteredOptionsTabCollections;

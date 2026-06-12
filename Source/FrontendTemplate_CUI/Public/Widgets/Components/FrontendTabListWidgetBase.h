@@ -29,7 +29,7 @@ private:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Frontend Tab List Settings", meta = (AllowPrivateAccess = "true", ClampMin = "1", ClampMax = "10"))
-	int32 DebugEditorPreviewTabCount = 3;
+	int32 DebugEditorPreviewTabCount = 4;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Frontend Tab List Settings", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UFrontendCommonButtonBase> TabButtonEntryWidgetClass;
