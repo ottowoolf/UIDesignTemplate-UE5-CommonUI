@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
-
+#include "FrontendTypes/FrontendEnumTypes.h"
 #include "Widget_ListEntry_Base.generated.h"
 
 class UCommonTextBlock;
+class UListDataObject_Base;
 /**
  *
  */
@@ -22,6 +23,11 @@ protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 	//~ End IUserObjectListEntry Interface
 
+	// The child class should override this function to handle the initialization needed. Super call is expected!
+	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InOwningListDataObject);
+
+	// The child class should override this function to update the UI values after the data object has been modified. Super cll is not needed.
+	virtual void OnOwningListDataObjectModified(UListDataObject_Base* OwningModifiedData, EOptionsListDataModifyReason ModifyReason);
 
 private:
 	//***** Bound Widgets *****//

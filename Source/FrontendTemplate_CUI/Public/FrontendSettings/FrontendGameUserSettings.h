@@ -7,11 +7,19 @@
 #include "FrontendGameUserSettings.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class FRONTENDTEMPLATE_CUI_API UFrontendGameUserSettings : public UGameUserSettings
 {
 	GENERATED_BODY()
-	
+
+
+public:
+	static UFrontendGameUserSettings* Get();
+
+private:
+	UPROPERTY(config)
+	FString CurrentGameDifficulty;
+
 };
