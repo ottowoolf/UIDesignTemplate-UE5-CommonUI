@@ -2,11 +2,29 @@
 
 
 #include "Widgets/Options/OptionsDataInteractionHelper.h"
+#include "FrontendSettings/FrontendGameUserSettings.h"
 
-OptionsDataInteractionHelper::OptionsDataInteractionHelper()
+FOptionsDataInteractionHelper::FOptionsDataInteractionHelper(const FString& InSetterOrGetterFuncPath)
+	: CachedDynamicFunctionPath(InSetterOrGetterFuncPath)
 {
+	CachedWeakGameUserSettings = UFrontendGameUserSettings::Get();
+}
+FString FOptionsDataInteractionHelper::GetValueAsString() const
+{
+	FString OutStringValue;
+	PropertyPathHelpers::GetPropertyValueAsString(
+		CachedWeakGameUserSettings.Get(),
+		CachedDynamicFunctionPath,
+		OutStringValue);
+
+	return OutStringValue;
 }
 
-OptionsDataInteractionHelper::~OptionsDataInteractionHelper()
+void FOptionsDataInteractionHelper::SetValueFromString(const FString& InStringValue) const
 {
+	PropertyPathHelpers::SetPropertyValueFromString(
+		CachedWeakGameUserSettings.Get(),
+		CachedDynamicFunctionPath,
+		InStringValue);
 }
+

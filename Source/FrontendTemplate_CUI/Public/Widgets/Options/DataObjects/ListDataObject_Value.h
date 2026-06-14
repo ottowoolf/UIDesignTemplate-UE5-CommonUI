@@ -7,6 +7,7 @@
 #include "ListDataObject_Value.generated.h"
 
 class UDataAsset_DataListEntryMapping;
+class FOptionsDataInteractionHelper;
 
 /**
  *
@@ -16,4 +17,10 @@ class FRONTENDTEMPLATE_CUI_API UListDataObject_Value : public UListDataObject_Ba
 {
 	GENERATED_BODY()
 
+public:
+	void SetDataDynamicGetter(const TSharedPtr<FOptionsDataInteractionHelper>& InDataDynamicGetter);
+	void SetDataDynamicSetter(const TSharedPtr<FOptionsDataInteractionHelper>& InDataDynamicSetter);
+protected:
+	TSharedPtr<FOptionsDataInteractionHelper> DataDynamicGetter;
+	TSharedPtr<FOptionsDataInteractionHelper> DataDynamicSetter;
 };

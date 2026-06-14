@@ -37,6 +37,8 @@ public:
 	virtual TArray<UListDataObject_Base*> GetAllChildSettingData() const { return TArray<UListDataObject_Base*>(); }
 	virtual bool HasAnyChildListData() const { return false; }
 
+	void SetShouldApplyChangeImmediately(bool bInShouldApplyRightAway) { bShouldApplyChangeImmediately = bInShouldApplyRightAway; }
+
 protected:
 	// Empty in base class. The child classes should override it to handle the initialization needed accordingly
 	virtual void OnDataObjectInitialized();
@@ -52,5 +54,7 @@ private:
 
 	UPROPERTY(Transient)
 	UListDataObject_Base* ParentData;
+
+	bool bShouldApplyChangeImmediately = false;
 
 };
