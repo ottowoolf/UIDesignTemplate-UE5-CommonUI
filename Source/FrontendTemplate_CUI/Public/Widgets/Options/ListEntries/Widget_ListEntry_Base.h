@@ -18,6 +18,12 @@ class FRONTENDTEMPLATE_CUI_API UWidget_ListEntry_Base : public UCommonUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On List Entry Widget Hovered"))
+	void BP_OnListEntryWidgetHovered(bool bWasHovered, bool bIsEntryWidgetStillSelected);
+
+	void NativeOnListEntryWidgetHovered(bool bWasHovered);
+
 protected:
 	//~ Begin IUserObjectListEntry Interface
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
@@ -28,6 +34,8 @@ protected:
 
 	// The child class should override this function to update the UI values after the data object has been modified. Super cll is not needed.
 	virtual void OnOwningListDataObjectModified(UListDataObject_Base* OwningModifiedData, EOptionsListDataModifyReason ModifyReason);
+
+	void SetThisEntryWidget();
 
 private:
 	//***** Bound Widgets *****//
