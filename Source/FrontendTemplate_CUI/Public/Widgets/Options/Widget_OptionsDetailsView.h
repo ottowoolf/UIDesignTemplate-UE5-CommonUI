@@ -10,6 +10,7 @@
 class UCommonTextBlock;
 class UCommonLazyImage;
 class UCommonRichTextBlock;
+class UListDataObject_Base;
 /**
  *
  */
@@ -17,6 +18,15 @@ UCLASS(abstract, BlueprintType, meta = (DisableNativeTick))
 class FRONTENDTEMPLATE_CUI_API UWidget_OptionsDetailsView : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	void UpdateDetailsViewInfo(UListDataObject_Base* InDataObject, const FString& InEntryWidgetClassName = FString());
+	void ClearDetailsViewInfo();
+
+protected:
+	// UUserWidget interface
+	virtual void NativeConstruct() override;
+	// End of UUserWidget interface
 
 private:
 	//***** Bound Widgets *****//

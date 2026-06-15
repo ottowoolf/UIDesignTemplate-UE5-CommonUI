@@ -29,13 +29,12 @@ protected:
 	//~ End UWidget_ListEntry_Base Interface
 
 
-
-
-
 private:
 
 	void OnPreviousOptionButtonClicked();
 	void OnNextOptionButtonClicked();
+
+	void OnRotatorValueChanged(int32 Value, bool bUserInitiated);
 
 	//***** Bound Widgets *****//
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, AllowPrivateAccess = "true"))

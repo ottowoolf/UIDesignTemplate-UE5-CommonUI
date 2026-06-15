@@ -5,6 +5,35 @@
 #include "Widgets/Options/OptionsDataInteractionHelper.h"
 #include "FrontendDebugHelper.h"
 
+void UListDataObject_String::OnDataObjectInitialized()
+{
+	// Set the default value to be the first option if there is any option available. Otherwise, set it to be empty string.
+	if (!AvailableOptionsStringArray.IsEmpty())
+	{
+		CurrentStringValue = AvailableOptionsStringArray[0];
+	}
+
+
+	if (HasDefaultvalue())
+	{
+		CurrentStringValue = GetDefaultValueAsString();
+	}
+
+
+	if (DataDynamicGetter)
+	{
+		if (!DataDynamicGetter->GetValueAsString().IsEmpty()) {
+			CurrentStringValue = DataDynamicGetter->GetValueAsString();
+		}
+	}
+
+	if (!TrySetDisplayTextFromStringValue(CurrentStringValue))
+	{
+		CurrentDisplayText = FText::FromString(TEXT("Invalid Option"));
+	}
+
+}
+
 void UListDataObject_String::AddDynamicOption(const FString& InStringValue, const FText& InDisplayText)
 {
 	AvailableOptionsStringArray.Add(InStringValue);
@@ -79,28 +108,56 @@ void UListDataObject_String::BackToPreviousOption()
 
 }
 
-void UListDataObject_String::OnDataObjectInitialized()
+void UListDataObject_String::OnRotatorInitiatedValueChange(const FText& InNewSelectedText)
 {
-	// Set the default value to be the first option if there is any option available. Otherwise, set it to be empty string.
-	if (!AvailableOptionsStringArray.IsEmpty())
-	{
-		CurrentStringValue = AvailableOptionsStringArray[0];
-	}
+	const int32 FoundIndex = AvailableOptionsTextArray.IndexOfByPredicate(
+		[InNewSelectedText](const FText& AvailableText)->bool
+		{
+			return AvailableText.EqualTo(InNewSelectedText);
+		}
+	);
 
-
-	//TODO: 
-	if (DataDynamicGetter)
+	if (FoundIndex != INDEX_NONE && AvailableOptionsStringArray.IsValidIndex(FoundIndex))
 	{
-		if (!DataDynamicGetter->GetValueAsString().IsEmpty()) {
-			CurrentStringValue = DataDynamicGetter->GetValueAsString();
+		CurrentDisplayText = InNewSelectedText;
+		CurrentStringValue = AvailableOptionsStringArray[FoundIndex];
+
+		if (DataDynamicSetter)
+		{
+			DataDynamicSetter->SetValueFromString(CurrentStringValue);
+
+			NotifyListDataModified(this);
 		}
 	}
 
-	if (!TrySetDisplayTextFromStringValue(CurrentStringValue))
+}
+
+
+bool UListDataObject_String::CanResetBackToDefaultValue() const
+{
+
+	return HasDefaultvalue() && CurrentStringValue != GetDefaultValueAsString();
+}
+
+bool UListDataObject_String::TryResetBackToDefaultValue()
+{
+	if (CanResetBackToDefaultValue())
 	{
-		CurrentDisplayText = FText::FromString(TEXT("Invalid Option"));
+		CurrentStringValue = GetDefaultValueAsString();
+
+		TrySetDisplayTextFromStringValue(CurrentStringValue);
+
+		if (DataDynamicSetter)
+		{
+			DataDynamicSetter->SetValueFromString(CurrentStringValue);
+
+			NotifyListDataModified(this, EOptionsListDataModifyReason::ResetToDefault);
+
+			return true;
+		}
 	}
 
+	return false;
 }
 
 bool UListDataObject_String::TrySetDisplayTextFromStringValue(const FString& InStringValue)
