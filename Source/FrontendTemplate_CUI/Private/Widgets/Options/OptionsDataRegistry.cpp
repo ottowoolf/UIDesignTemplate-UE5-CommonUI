@@ -162,8 +162,9 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 			MasterVolume->SetDefaultValueFromString(LexToString(1.f));
 			MasterVolume->SetDisplayNumericType(ECommonNumericType::Percentage);
 			MasterVolume->SetNumberFormattingOptions(UListDataObject_Scalar::NoDecimal()); // No Decimal e.g. 50% instead of 50.00%
-
-			//TOD: set dynamic getter and setter for the master volume when the audio setting is ready.
+			MasterVolume->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetMasterVolume));
+			MasterVolume->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetMasterVolume));
+			MasterVolume->SetShouldApplyChangeImmediately(true);
 
 			VolumeCategoryCollection->AddChildListData(MasterVolume);
 		}
