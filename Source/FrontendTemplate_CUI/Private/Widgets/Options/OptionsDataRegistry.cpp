@@ -8,6 +8,8 @@
 #include "FrontendSettings/FrontendGameUserSettings.h"
 #include "FrontendFunctionLibrary.h"
 #include "FrontendGameplayTags.h"
+#include "Widgets/Options/DataObjects/ListDataObject_Scalar.h"
+
 
 
 
@@ -33,7 +35,47 @@ TArray<UListDataObject_Base*> UOptionsDataRegistry::GetListSourceItemsBySelected
 	checkf(FoundTabCollectionPtr, TEXT("No valid tab found for the tab ID: %s"), *InSelectedTabId.ToString());
 
 	UListDataObject_Collection* FoundTabCollection = *FoundTabCollectionPtr;
-	return FoundTabCollection->GetAllChildListData();
+
+	TArray<UListDataObject_Base*> AllChildListItems;
+	for (UListDataObject_Base* ChildListData : FoundTabCollection->GetAllChildListData())
+	{
+		if (!ChildListData)
+		{
+			continue;
+		}
+
+		AllChildListItems.Add(ChildListData);
+
+		if (ChildListData->HasAnyChildListData())
+		{
+			FindChildListDataRecursively(ChildListData, AllChildListItems);
+		}
+	}
+
+	return AllChildListItems;
+}
+
+void UOptionsDataRegistry::FindChildListDataRecursively(UListDataObject_Base* InParentData, TArray<UListDataObject_Base*>& OutFoundChildListData) const
+{
+	if (!InParentData || !InParentData->HasAnyChildListData())
+	{
+		return;
+	}
+
+	for (UListDataObject_Base* SubChildListData : InParentData->GetAllChildListData())
+	{
+		if (!SubChildListData)
+		{
+			continue;
+		}
+
+		OutFoundChildListData.Add(SubChildListData);
+
+		if (SubChildListData->HasAnyChildListData())
+		{
+			FindChildListDataRecursively(SubChildListData, OutFoundChildListData);
+		}
+	}
 }
 
 void UOptionsDataRegistry::InitGameplayCollectionTab()
@@ -97,6 +139,35 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 	UListDataObject_Collection* AudioTabCollection = NewObject<UListDataObject_Collection>();
 	AudioTabCollection->SetDataID(FName("AudioTabCollection"));
 	AudioTabCollection->SetDataDisplayName(FText::FromString(TEXT("Audio")));
+
+	//Volume Category
+	{
+		UListDataObject_Collection* VolumeCategoryCollection = NewObject<UListDataObject_Collection>();
+
+		VolumeCategoryCollection->SetDataID(FName("VolumeCategoryCollection"));
+		VolumeCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Volume")));
+
+		AudioTabCollection->AddChildListData(VolumeCategoryCollection);
+
+		// Master Volume
+		{
+			UListDataObject_Scalar* MasterVolume = NewObject<UListDataObject_Scalar>();
+			MasterVolume->SetDataID(FName("MasterVolume"));
+			MasterVolume->SetDataDisplayName(FText::FromString(TEXT("Master Volume")));
+
+			MasterVolume->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the overall volume of the game.")));
+			MasterVolume->SetDisplayValueRange(TRange<float>(0.f, 1.f));
+			MasterVolume->SetOutputValueRange(TRange<float>(0.f, 2.f));
+			MasterVolume->SetSliderStepSize(0.1f);
+			MasterVolume->SetDefaultValueFromString(LexToString(1.f));
+			MasterVolume->SetDisplayNumericType(ECommonNumericType::Percentage);
+			MasterVolume->SetNumberFormattingOptions(UListDataObject_Scalar::NoDecimal()); // No Decimal e.g. 50% instead of 50.00%
+
+			//TOD: set dynamic getter and setter for the master volume when the audio setting is ready.
+
+			VolumeCategoryCollection->AddChildListData(MasterVolume);
+		}
+	}
 
 	RegisteredOptionsTabCollections.Add(AudioTabCollection);
 }

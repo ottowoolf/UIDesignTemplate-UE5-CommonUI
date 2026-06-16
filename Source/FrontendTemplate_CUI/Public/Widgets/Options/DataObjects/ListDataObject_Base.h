@@ -34,7 +34,7 @@ public:
 
 
 	// Empty in the base class, but should be overridden by child class ListDataObject_Collection. The function should return all child data a tab has.
-	virtual TArray<UListDataObject_Base*> GetAllChildSettingData() const { return TArray<UListDataObject_Base*>(); }
+	virtual TArray<UListDataObject_Base*> GetAllChildListData() const { return TArray<UListDataObject_Base*>(); }
 	virtual bool HasAnyChildListData() const { return false; }
 
 	void SetShouldApplyChangeImmediately(bool bInShouldApplyRightAway) { bShouldApplyChangeImmediately = bInShouldApplyRightAway; }
