@@ -40,7 +40,7 @@ public:
 	void SetShouldApplyChangeImmediately(bool bInShouldApplyRightAway) { bShouldApplyChangeImmediately = bInShouldApplyRightAway; }
 
 	// Child class should ovverride to provide the implementation for resetting.
-	virtual bool HasDefaultvalue() const { return false; }
+	virtual bool HasDefaultValue() const { return false; }
 	virtual bool CanResetBackToDefaultValue() const { return false; }
 	virtual bool TryResetBackToDefaultValue() { return false; }
 

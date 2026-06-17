@@ -24,7 +24,7 @@ public:
 	void SetDefaultValueFromString(const FString& InDefaultValue) { DefaultStringValue = InDefaultValue; }
 
 	//~ Begin UListDataObject_Base Interface
-	virtual bool HasDefaultvalue() const override { return DefaultStringValue.IsSet(); }
+	virtual bool HasDefaultValue() const override { return DefaultStringValue.IsSet(); }
 	//~ End UListDataObject_Base Interface
 
 protected:

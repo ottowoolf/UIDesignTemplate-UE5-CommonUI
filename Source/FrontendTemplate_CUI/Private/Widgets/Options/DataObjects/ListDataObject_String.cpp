@@ -14,7 +14,7 @@ void UListDataObject_String::OnDataObjectInitialized()
 	}
 
 
-	if (HasDefaultvalue())
+	if (HasDefaultValue())
 	{
 		CurrentStringValue = GetDefaultValueAsString();
 	}
@@ -136,7 +136,7 @@ void UListDataObject_String::OnRotatorInitiatedValueChange(const FText& InNewSel
 bool UListDataObject_String::CanResetBackToDefaultValue() const
 {
 
-	return HasDefaultvalue() && CurrentStringValue != GetDefaultValueAsString();
+	return HasDefaultValue() && CurrentStringValue != GetDefaultValueAsString();
 }
 
 bool UListDataObject_String::TryResetBackToDefaultValue()
@@ -173,3 +173,54 @@ bool UListDataObject_String::TrySetDisplayTextFromStringValue(const FString& InS
 
 	return false;
 }
+
+
+//************ UListDataObject_StringBool Implementation************//
+
+void UListDataObject_StringBool::OverrideTrueDisplayText(const FText& InTrueDisplayText)
+{
+	if (!AvailableOptionsStringArray.Contains(TrueString))
+	{
+		AddDynamicOption(TrueString, InTrueDisplayText);
+	}
+}
+
+void UListDataObject_StringBool::OverrideFalseDisplayText(const FText& InFalseDisplayText)
+{
+	if (!AvailableOptionsStringArray.Contains(FalseString))
+	{
+		AddDynamicOption(FalseString, InFalseDisplayText);
+	}
+}
+
+void UListDataObject_StringBool::SetTrueAsDefaultValue()
+{
+	SetDefaultValueFromString(TrueString);
+}
+
+void UListDataObject_StringBool::SetFalseAsDefaultValue()
+{
+	SetDefaultValueFromString(FalseString);
+}
+
+void UListDataObject_StringBool::OnDataObjectInitialized()
+{
+	TryInitBoolValues();
+	Super::OnDataObjectInitialized();
+}
+
+void UListDataObject_StringBool::TryInitBoolValues()
+{
+	if (!AvailableOptionsStringArray.Contains(TrueString))
+	{
+		AddDynamicOption(TrueString, FText::FromString(TEXT("ON")));
+	}
+
+	if (!AvailableOptionsStringArray.Contains(FalseString))
+	{
+		AddDynamicOption(FalseString, FText::FromString(TEXT("OFF")));
+	}
+}
+
+
+//************ UListDataObject_StringBool Implementation************//

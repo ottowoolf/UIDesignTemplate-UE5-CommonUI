@@ -32,6 +32,27 @@ public:
 	float GetMasterVolume() const { return MasterVolume; }
 	UFUNCTION()
 	void SetMasterVolume(float InVolume);
+
+	UFUNCTION()
+	float GetMusicVolume() const { return MusicVolume; }
+	UFUNCTION()
+	void SetMusicVolume(float InVolume);
+
+	UFUNCTION()
+	float GetSFXVolume() const { return SFXVolume; }
+	UFUNCTION()
+	void SetSFXVolume(float InVolume);
+
+	UFUNCTION()
+	bool GetAllowBackgroundAudio() const { return bAllowBackgroundAudio; }
+	UFUNCTION()
+	void SetAllowBackgroundAudio(bool bIsAllowed);
+
+	UFUNCTION()
+	bool GetUseHDRAudioMode() const { return bUseHDRAudioMode; }
+	UFUNCTION()
+	void SetUseHDRAudioMode(bool bIsAllowed);
+
 	//***** Audio Collection Tab *****//
 private:
 
@@ -43,6 +64,21 @@ private:
 	//***** Audio Collection Tab *****//
 	UPROPERTY(config)
 	float MasterVolume;
+
+	UPROPERTY(config)
+	float MusicVolume;
+
+	UPROPERTY(config)
+	float SFXVolume;
+
+	UPROPERTY(config)
+	bool bAllowBackgroundAudio;
+
+	UPROPERTY(config)
+	bool bUseHDRAudioMode;
+
+
+
 	//***** Audio Collection Tab *****//
 
 };

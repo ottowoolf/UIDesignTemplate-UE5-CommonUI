@@ -61,7 +61,7 @@ void UWidget_ListEntry_Base::OnOwningListDataObjectModified(UListDataObject_Base
 
 }
 
-void UWidget_ListEntry_Base::SetThisEntryWidget()
+void UWidget_ListEntry_Base::SelectThisEntryWidget()
 {
 	CastChecked<UListView>(GetOwningListView())->SetSelectedItem(GetListItem());
 }

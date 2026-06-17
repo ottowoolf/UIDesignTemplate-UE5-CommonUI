@@ -5,6 +5,10 @@
 
 UFrontendGameUserSettings::UFrontendGameUserSettings()
 	: MasterVolume(1.f)
+	, MusicVolume(1.f)
+	, SFXVolume(1.f)
+	, bAllowBackgroundAudio(false)
+	, bUseHDRAudioMode(false)
 {
 }
 
@@ -23,4 +27,28 @@ void UFrontendGameUserSettings::SetMasterVolume(float InVolume)
 	MasterVolume = InVolume;
 
 	//The actual logic for controlling the volume goes here.
+}
+
+void UFrontendGameUserSettings::SetMusicVolume(float InVolume)
+{
+	MusicVolume = InVolume;
+	//The actual logic for controlling the music volume goes here.
+}
+
+void UFrontendGameUserSettings::SetSFXVolume(float InVolume)
+{
+	SFXVolume = InVolume;
+	//The actual logic for controlling the SFX volume goes here.
+}
+
+void UFrontendGameUserSettings::SetAllowBackgroundAudio(bool bIsAllowed)
+{
+	bAllowBackgroundAudio = bIsAllowed;
+	//The actual logic for allowing background audio goes here.
+}
+
+void UFrontendGameUserSettings::SetUseHDRAudioMode(bool bIsAllowed)
+{
+	bUseHDRAudioMode = bIsAllowed;
+	//The actual logic for controlling the use of HDR audio mode goes here.
 }

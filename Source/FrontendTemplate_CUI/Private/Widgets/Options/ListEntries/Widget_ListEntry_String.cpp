@@ -16,7 +16,7 @@ void UWidget_ListEntry_String::NativeOnInitialized()
 	CommonButton_PreviousOption->OnClicked().AddUObject(this, &ThisClass::OnPreviousOptionButtonClicked);
 	CommonButton_NextOption->OnClicked().AddUObject(this, &ThisClass::OnNextOptionButtonClicked);
 
-	CommonRotator_AvailableOptions->OnClicked().AddLambda([this]() { SetThisEntryWidget(); });
+	CommonRotator_AvailableOptions->OnClicked().AddLambda([this]() { SelectThisEntryWidget(); });
 	CommonRotator_AvailableOptions->OnRotatedEvent.AddUObject(this, &ThisClass::OnRotatorValueChanged);
 
 }
@@ -49,7 +49,7 @@ void UWidget_ListEntry_String::OnPreviousOptionButtonClicked()
 		CachedOwningStringDataObject->BackToPreviousOption();
 	}
 
-	SetThisEntryWidget();
+	SelectThisEntryWidget();
 }
 
 void UWidget_ListEntry_String::OnNextOptionButtonClicked()
@@ -58,7 +58,7 @@ void UWidget_ListEntry_String::OnNextOptionButtonClicked()
 	{
 		CachedOwningStringDataObject->AdvanceToNextOption();
 	}
-	SetThisEntryWidget();
+	SelectThisEntryWidget();
 
 }
 

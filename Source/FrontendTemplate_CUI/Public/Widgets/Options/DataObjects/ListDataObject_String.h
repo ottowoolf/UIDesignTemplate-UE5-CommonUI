@@ -40,3 +40,31 @@ public:
 
 	FORCEINLINE FText GetCurrentDisplayText() const { return CurrentDisplayText; }
 };
+
+//Child Class of UListDataObject_String that is specifically designed for handling boolean options.
+UCLASS()
+class FRONTENDTEMPLATE_CUI_API UListDataObject_StringBool : public UListDataObject_String
+{
+	GENERATED_BODY()
+
+public:
+	void OverrideTrueDisplayText(const FText& InTrueDisplayText);
+	void OverrideFalseDisplayText(const FText& InFalseDisplayText);
+
+	void SetTrueAsDefaultValue();
+	void SetFalseAsDefaultValue();
+
+protected:
+
+	//~Begin UListDataObject_String Interface
+	virtual void OnDataObjectInitialized() override;
+	//~End UListDataObject_String Interface
+
+
+private:
+
+	void TryInitBoolValues();
+
+	const FString TrueString = TEXT("true");
+	const FString FalseString = TEXT("false");
+};
