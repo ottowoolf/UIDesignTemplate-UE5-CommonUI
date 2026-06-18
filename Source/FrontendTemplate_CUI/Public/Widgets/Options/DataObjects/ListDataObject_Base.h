@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "FrontendTypes/FrontendEnumTypes.h"
+#include "FrontendTypes/FrontendStructTypes.h"
 #include "ListDataObject_Base.generated.h"
 
 
@@ -44,11 +45,24 @@ public:
 	virtual bool CanResetBackToDefaultValue() const { return false; }
 	virtual bool TryResetBackToDefaultValue() { return false; }
 
+	// Gets called from OptionsDataRegister for adding in edit conditions for the constructed list data objects.
+	void AddEditCondition(const FOptionsDataEditConditionDescriptor& InEditCondition);
+
+	bool IsDataCurrentlyEditable();
+
 protected:
 	// Empty in base class. The child classes should override it to handle the initialization needed accordingly
 	virtual void OnDataObjectInitialized();
 
 	virtual void NotifyListDataModified(UListDataObject_Base* ModifiedData, EOptionsListDataModifyReason ModifyReason = EOptionsListDataModifyReason::DirectlyModified);
+
+	// The child cklass should override it to allow the value to be set to the forced strihng value.
+	virtual bool CanSetToForcedStringValue(const FString& InForcedValue) const { return false; }
+
+	// The child class should override it to specify how to set the current value to the forced value.
+	virtual void OnSetToForcedStringValue(const FString& InForcedValue) {}
+
+
 
 private:
 	FName DataID;
@@ -61,5 +75,8 @@ private:
 	UListDataObject_Base* ParentData;
 
 	bool bShouldApplyChangeImmediately = false;
+
+	UPROPERTY(Transient)
+	TArray<FOptionsDataEditConditionDescriptor> EditConditionDescArray;
 
 };

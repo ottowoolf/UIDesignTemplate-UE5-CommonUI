@@ -7,11 +7,26 @@
 #include "ListDataObject_StringResolution.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class FRONTENDTEMPLATE_CUI_API UListDataObject_StringResolution : public UListDataObject_String
 {
 	GENERATED_BODY()
-	
+
+public:
+	void InitStringResolutionValues();
+
+protected:
+
+	//~Begin UListDataObject_String Interface
+	virtual void OnDataObjectInitialized() override;
+	//~End UListDataObject_String Interface
+
+private:
+	FString ResToValueString(const FIntPoint& InResolution) const;
+	FText ResToDisplayText(const FIntPoint& InResolution) const;
+
+	FString MaximumAllowedResolution;
+
 };

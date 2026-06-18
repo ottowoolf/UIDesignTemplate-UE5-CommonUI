@@ -9,6 +9,8 @@
 #include "FrontendFunctionLibrary.h"
 #include "FrontendGameplayTags.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Scalar.h"
+#include "Widgets/Options/DataObjects/ListDataObject_StringResolution.h"
+
 
 
 
@@ -257,6 +259,50 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 	UListDataObject_Collection* VideoTabCollection = NewObject<UListDataObject_Collection>();
 	VideoTabCollection->SetDataID(FName("VideoTabCollection"));
 	VideoTabCollection->SetDataDisplayName(FText::FromString(TEXT("Video")));
+
+	// Display Category
+	{
+		UListDataObject_Collection* DisplayCategoryCollection = NewObject<UListDataObject_Collection>();
+		DisplayCategoryCollection->SetDataID(FName("DisplayCategoryCollection"));
+		DisplayCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Display")));
+
+		VideoTabCollection->AddChildListData(DisplayCategoryCollection);
+
+		// Window Mode
+		{
+			UListDataObject_StringEnum* WindowMode = NewObject<UListDataObject_StringEnum>();
+			WindowMode->SetDataID(FName("WindowMode"));
+			WindowMode->SetDataDisplayName(FText::FromString(TEXT("Window Mode")));
+			WindowMode->SetDescriptionRichText(FText::FromString(TEXT("Sets the window mode for the game.")));
+
+			WindowMode->AddEnumOption(EWindowMode::Fullscreen, FText::FromString(TEXT("Fullscreen")));
+			WindowMode->AddEnumOption(EWindowMode::WindowedFullscreen, FText::FromString(TEXT("Borderless Window")));
+			WindowMode->AddEnumOption(EWindowMode::Windowed, FText::FromString(TEXT("Windowed")));
+
+			WindowMode->SetDefaultValueFromEnumOption(EWindowMode::Fullscreen);
+			WindowMode->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetFullscreenMode));
+			WindowMode->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetFullscreenMode));
+			WindowMode->SetShouldApplyChangeImmediately(true);
+
+			DisplayCategoryCollection->AddChildListData(WindowMode);
+		}
+
+		// Screen Resolution
+		{
+			UListDataObject_StringResolution* ScreenResolution = NewObject<UListDataObject_StringResolution>();
+			ScreenResolution->SetDataID(FName("ScreenResolution"));
+			ScreenResolution->SetDataDisplayName(FText::FromString(TEXT("Screen Resolution")));
+			ScreenResolution->SetDescriptionRichText(FText::FromString(TEXT("Sets the screen resolution for the game.")));
+			ScreenResolution->InitStringResolutionValues();
+
+			ScreenResolution->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetScreenResolution));
+			ScreenResolution->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetScreenResolution));
+			ScreenResolution->SetShouldApplyChangeImmediately(true);
+
+			DisplayCategoryCollection->AddChildListData(ScreenResolution);
+		}
+	}
+
 	RegisteredOptionsTabCollections.Add(VideoTabCollection);
 }
 
