@@ -69,12 +69,13 @@ void UListDataObject_Base::OnDataObjectInitialized()
 
 void UListDataObject_Base::NotifyListDataModified(UListDataObject_Base* ModifiedData, EOptionsListDataModifyReason ModifyReason)
 {
-	OnListDataModified.Broadcast(ModifiedData, ModifyReason);
 
 	if (bShouldApplyChangeImmediately)
 	{
 		UFrontendGameUserSettings::Get()->ApplySettings(true);
 	}
+
+	OnListDataModified.Broadcast(ModifiedData, ModifyReason);
 }
 
 void UListDataObject_Base::OnEditDependencyDataModified(UListDataObject_Base* ModifiedDependencyData, EOptionsListDataModifyReason ModifyReason)

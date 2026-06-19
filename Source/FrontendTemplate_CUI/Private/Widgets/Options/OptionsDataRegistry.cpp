@@ -10,13 +10,13 @@
 #include "FrontendGameplayTags.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Scalar.h"
 #include "Widgets/Options/DataObjects/ListDataObject_StringResolution.h"
-
-
-
+#include "Internationalization/StringTableRegistry.h"
 
 
 #define MAKE_OPTIONS_DATA_CONTROL(SetterOrGetterFuncName) \
 	MakeShared<FOptionsDataInteractionHelper>(GET_FUNCTION_NAME_STRING_CHECKED(UFrontendGameUserSettings, SetterOrGetterFuncName))
+
+#define GET_DESCRIPTION(InKey) LOCTABLE("/Game/UI/StringTables/ST_OptionsScreenDescription.ST_OptionsScreenDescription", InKey)
 
 void UOptionsDataRegistry::InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPlayer)
 {
@@ -263,7 +263,7 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			UListDataObject_StringEnum* WindowMode = NewObject<UListDataObject_StringEnum>();
 			WindowMode->SetDataID(FName("WindowMode"));
 			WindowMode->SetDataDisplayName(FText::FromString(TEXT("Window Mode")));
-			WindowMode->SetDescriptionRichText(FText::FromString(TEXT("Sets the window mode for the game.")));
+			WindowMode->SetDescriptionRichText(GET_DESCRIPTION("WindowModeDescKey"));
 
 			WindowMode->AddEnumOption(EWindowMode::Fullscreen, FText::FromString(TEXT("Fullscreen")));
 			WindowMode->AddEnumOption(EWindowMode::WindowedFullscreen, FText::FromString(TEXT("Borderless Window")));
@@ -286,7 +286,7 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			UListDataObject_StringResolution* ScreenResolution = NewObject<UListDataObject_StringResolution>();
 			ScreenResolution->SetDataID(FName("ScreenResolution"));
 			ScreenResolution->SetDataDisplayName(FText::FromString(TEXT("Screen Resolution")));
-			ScreenResolution->SetDescriptionRichText(FText::FromString(TEXT("Sets the screen resolution for the game.")));
+			ScreenResolution->SetDescriptionRichText(GET_DESCRIPTION("ScreenResolutionsDescKey"));
 			ScreenResolution->InitStringResolutionValues();
 
 			ScreenResolution->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetScreenResolution));
@@ -309,6 +309,8 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			ScreenResolution->AddEditCondition(WindowedModeEditCondition);
 
 			ScreenResolution->AddEditDependencyData(CreatedWindowMode);
+
+
 			DisplayCategoryCollection->AddChildListData(ScreenResolution);
 		}
 	}
@@ -337,10 +339,11 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			DisplayGamma->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentDisplayGamma));
 			DisplayGamma->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentDisplayGamma));
 			DisplayGamma->SetDefaultValueFromString(LexToString(2.2f));
-			DisplayGamma->SetShouldApplyChangeImmediately(true);
 
 			GraphicsCategoryCollection->AddChildListData(DisplayGamma);
 		}
+
+		UListDataObject_StringInteger* CreatedQualityPreset = nullptr;
 
 		// Quality Preset
 		{
@@ -355,14 +358,281 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			QualityPreset->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
 			QualityPreset->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetOverallScalabilityLevel));
 			QualityPreset->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetOverallScalabilityLevel));
+			QualityPreset->SetDefaultValueFromString(LexToString(2)); // Default to High
 			QualityPreset->SetShouldApplyChangeImmediately(true);
 
 			GraphicsCategoryCollection->AddChildListData(QualityPreset);
+
+			CreatedQualityPreset = QualityPreset;
+		}
+
+		// Resolution Scale
+		{
+			UListDataObject_Scalar* ResolutionScale = NewObject<UListDataObject_Scalar>();
+			ResolutionScale->SetDataID(FName("ResolutionScale"));
+			ResolutionScale->SetDataDisplayName(FText::FromString(TEXT("Resolution Scale")));
+			ResolutionScale->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the resolution scale, which can impact performance by rendering the game at a lower resolution and upscaling it to fit the screen.")));
+
+			ResolutionScale->SetDisplayValueRange(TRange<float>(0.f, 1.f));
+			ResolutionScale->SetOutputValueRange(TRange<float>(0.f, 1.f));
+			ResolutionScale->SetDisplayNumericType(ECommonNumericType::Percentage);
+			ResolutionScale->SetNumberFormattingOptions(UListDataObject_Scalar::NoDecimal());
+
+			ResolutionScale->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetResolutionScaleNormalized));
+			ResolutionScale->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetResolutionScaleNormalized));
+			ResolutionScale->SetDefaultValueFromString(LexToString(1.f));
+			ResolutionScale->SetShouldApplyChangeImmediately(true);
+
+			ResolutionScale->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(ResolutionScale);
+
+			GraphicsCategoryCollection->AddChildListData(ResolutionScale);
+		}
+
+		// Global Illumination
+		{
+			UListDataObject_StringInteger* GlobalIllumination = NewObject<UListDataObject_StringInteger>();
+			GlobalIllumination->SetDataID(FName("GlobalIllumination"));
+			GlobalIllumination->SetDataDisplayName(FText::FromString(TEXT("Global Illumination")));
+			GlobalIllumination->SetDescriptionRichText(FText::FromString(TEXT("Sets the global illumination quality used for indirect lighting in the game.")));
+			GlobalIllumination->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			GlobalIllumination->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			GlobalIllumination->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			GlobalIllumination->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			GlobalIllumination->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+
+			GlobalIllumination->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetGlobalIlluminationQuality));
+			GlobalIllumination->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetGlobalIlluminationQuality));
+			GlobalIllumination->SetShouldApplyChangeImmediately(true);
+
+			GlobalIllumination->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(GlobalIllumination);
+
+			GraphicsCategoryCollection->AddChildListData(GlobalIllumination);
+
+		}
+
+		//Shadow Quality
+		{
+			UListDataObject_StringInteger* ShadowQuality = NewObject<UListDataObject_StringInteger>();
+			ShadowQuality->SetDataID(FName("ShadowQuality"));
+			ShadowQuality->SetDataDisplayName(FText::FromString(TEXT("Shadow Quality")));
+			ShadowQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the shadow quality for the game.")));
+			ShadowQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			ShadowQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			ShadowQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			ShadowQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			ShadowQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+
+			ShadowQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetShadowQuality));
+			ShadowQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetShadowQuality));
+			ShadowQuality->SetShouldApplyChangeImmediately(true);
+
+			ShadowQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(ShadowQuality);
+
+			GraphicsCategoryCollection->AddChildListData(ShadowQuality);
+		}
+
+		// Anti-Aliasing Quality
+		{
+			UListDataObject_StringInteger* AntiAliasingQuality = NewObject<UListDataObject_StringInteger>();
+			AntiAliasingQuality->SetDataID(FName("AntiAliasingQuality"));
+			AntiAliasingQuality->SetDataDisplayName(FText::FromString(TEXT("Anti-Aliasing Quality")));
+			AntiAliasingQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the anti-aliasing quality for the game.")));
+			AntiAliasingQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			AntiAliasingQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			AntiAliasingQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			AntiAliasingQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			AntiAliasingQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+
+			AntiAliasingQuality->SetDefaultValueFromString(LexToString(2)); // Default to High
+			AntiAliasingQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetAntiAliasingQuality));
+			AntiAliasingQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetAntiAliasingQuality)); \
+				AntiAliasingQuality->SetShouldApplyChangeImmediately(true);
+
+			AntiAliasingQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(AntiAliasingQuality);
+
+			GraphicsCategoryCollection->AddChildListData(AntiAliasingQuality);
+		}
+
+		// View Distance Quality
+		{
+			UListDataObject_StringInteger* ViewDistanceQuality = NewObject<UListDataObject_StringInteger>();
+			ViewDistanceQuality->SetDataID(FName("ViewDistanceQuality"));
+			ViewDistanceQuality->SetDataDisplayName(FText::FromString(TEXT("View Distance Quality")));
+			ViewDistanceQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the view distance quality for the game.")));
+			ViewDistanceQuality->AddIntegerOption(0, FText::FromString(TEXT("Near")));
+			ViewDistanceQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			ViewDistanceQuality->AddIntegerOption(2, FText::FromString(TEXT("Far")));
+			ViewDistanceQuality->AddIntegerOption(3, FText::FromString(TEXT("Very Far")));
+			ViewDistanceQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			ViewDistanceQuality->SetDefaultValueFromString(LexToString(2)); // Default to High
+			ViewDistanceQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetViewDistanceQuality));
+			ViewDistanceQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetViewDistanceQuality));
+			ViewDistanceQuality->SetShouldApplyChangeImmediately(true);
+
+			ViewDistanceQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(ViewDistanceQuality);
+
+			GraphicsCategoryCollection->AddChildListData(ViewDistanceQuality);
+		}
+
+		// Texture Quality
+		{
+			UListDataObject_StringInteger* TextureQuality = NewObject<UListDataObject_StringInteger>();
+			TextureQuality->SetDataID(FName("TextureQuality"));
+			TextureQuality->SetDataDisplayName(FText::FromString(TEXT("Texture Quality")));
+			TextureQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the texture quality for the game.")));
+			TextureQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			TextureQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			TextureQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			TextureQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			TextureQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			TextureQuality->SetDefaultValueFromString(LexToString(2)); // Default to High
+			TextureQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetTextureQuality));
+			TextureQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetTextureQuality));
+			TextureQuality->SetShouldApplyChangeImmediately(true);
+
+			TextureQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(TextureQuality);
+
+			GraphicsCategoryCollection->AddChildListData(TextureQuality);
+		}
+
+		// VFX Quality
+		{
+			UListDataObject_StringInteger* VFXQuality = NewObject<UListDataObject_StringInteger>();
+			VFXQuality->SetDataID(FName("VFXQuality"));
+			VFXQuality->SetDataDisplayName(FText::FromString(TEXT("VFX Quality")));
+			VFXQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the visual effects quality for the game.")));
+			VFXQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			VFXQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			VFXQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			VFXQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			VFXQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			VFXQuality->SetDefaultValueFromString(LexToString(2)); // Default to High
+			VFXQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetVisualEffectQuality));
+			VFXQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetVisualEffectQuality));
+			VFXQuality->SetShouldApplyChangeImmediately(true);
+
+			VFXQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(VFXQuality);
+
+			GraphicsCategoryCollection->AddChildListData(VFXQuality);
+		}
+
+		// Reflection Quality
+		{
+			UListDataObject_StringInteger* ReflectionQuality = NewObject<UListDataObject_StringInteger>();
+			ReflectionQuality->SetDataID(FName("ReflectionQuality"));
+			ReflectionQuality->SetDataDisplayName(FText::FromString(TEXT("Reflection Quality")));
+			ReflectionQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the reflection quality for the game.")));
+			ReflectionQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			ReflectionQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			ReflectionQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			ReflectionQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			ReflectionQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			ReflectionQuality->SetDefaultValueFromString(LexToString(2)); // Default to High
+			ReflectionQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetReflectionQuality));
+			ReflectionQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetReflectionQuality));
+			ReflectionQuality->SetShouldApplyChangeImmediately(true);
+
+			ReflectionQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(ReflectionQuality);
+
+			GraphicsCategoryCollection->AddChildListData(ReflectionQuality);
+		}
+
+		// Post-Processing Quality
+		{
+			UListDataObject_StringInteger* PostProcessQuality = NewObject<UListDataObject_StringInteger>();
+			PostProcessQuality->SetDataID(FName("PostProcessQuality"));
+			PostProcessQuality->SetDataDisplayName(FText::FromString(TEXT("Post-Processing Quality")));
+			PostProcessQuality->SetDescriptionRichText(FText::FromString(TEXT("Sets the post-processing quality for the game.")));
+			PostProcessQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			PostProcessQuality->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			PostProcessQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			PostProcessQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			PostProcessQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			PostProcessQuality->SetDefaultValueFromString(LexToString(2)); // Default to High
+			PostProcessQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetPostProcessingQuality));
+			PostProcessQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetPostProcessingQuality));
+			PostProcessQuality->SetShouldApplyChangeImmediately(true);
+
+			PostProcessQuality->AddEditDependencyData(CreatedQualityPreset);
+			CreatedQualityPreset->AddEditDependencyData(PostProcessQuality);
+
+			GraphicsCategoryCollection->AddChildListData(PostProcessQuality);
+		}
+
+		RegisteredOptionsTabCollections.Add(VideoTabCollection);
+	}
+
+	// Advanced Graphics Category
+	{
+		UListDataObject_Collection* AdvancedGraphicsCategoryCollection = NewObject<UListDataObject_Collection>();
+		AdvancedGraphicsCategoryCollection->SetDataID(FName("AdvancedGraphicsCategoryCollection"));
+		AdvancedGraphicsCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Advanced Graphics")));
+		AdvancedGraphicsCategoryCollection->SetDescriptionRichText(FText::FromString(TEXT("Adjust these settings to find the right balance between visual quality and performance for your system.")));
+
+		VideoTabCollection->AddChildListData(AdvancedGraphicsCategoryCollection);
+
+		// Vertical Sync
+		{
+			UListDataObject_StringBool* VerticalSync = NewObject<UListDataObject_StringBool>();
+			VerticalSync->SetDataID(FName("VerticalSync"));
+			VerticalSync->SetDataDisplayName(FText::FromString(TEXT("V-Sync")));
+			VerticalSync->SetDescriptionRichText(FText::FromString(TEXT("Enables or disables vertical sync, <Disabled>Warning:</> This may introduce input lag!.")));
+			VerticalSync->OverrideTrueDisplayText(FText::FromString(TEXT("Enabled")));
+			VerticalSync->OverrideFalseDisplayText(FText::FromString(TEXT("Disabled")));
+			VerticalSync->SetFalseAsDefaultValue();
+			VerticalSync->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(IsVSyncEnabled));
+			VerticalSync->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetVSyncEnabled));
+			VerticalSync->SetFalseAsDefaultValue();
+			VerticalSync->SetShouldApplyChangeImmediately(true);
+
+			FOptionsDataEditConditionDescriptor FullScreenOnlyCondition;
+			FullScreenOnlyCondition.SetEditConditionFunc([CreatedWindowMode]() -> bool
+				{
+					return CreatedWindowMode->GetCurrentValueAsEnum<EWindowMode::Type>() == EWindowMode::Fullscreen;
+
+				}
+
+			);
+
+			FullScreenOnlyCondition.SetDisabledRichReason(TEXT("\n\n<Disabled>V-Sync can only be changed in fullscreen mode.</>"));
+			FullScreenOnlyCondition.SetDisabledForcedStringValue(TEXT("false"));
+
+			VerticalSync->AddEditCondition(FullScreenOnlyCondition);
+
+			AdvancedGraphicsCategoryCollection->AddChildListData(VerticalSync);
+
+		}
+
+		// Frame Rate Limit
+		{
+			UListDataObject_String* FrameRateLimit = NewObject<UListDataObject_String>();
+			FrameRateLimit->SetDataID(FName("FrameRateLimit"));
+			FrameRateLimit->SetDataDisplayName(FText::FromString(TEXT("Frame Rate Limit")));
+			FrameRateLimit->SetDescriptionRichText(FText::FromString(TEXT("Set a custom frame rate limit for the game.")));
+			FrameRateLimit->AddDynamicOption(LexToString(30.f), FText::FromString(TEXT("30 FPS")));
+			FrameRateLimit->AddDynamicOption(LexToString(60.f), FText::FromString(TEXT("60 FPS")));
+			FrameRateLimit->AddDynamicOption(LexToString(90.f), FText::FromString(TEXT("90 FPS")));
+			FrameRateLimit->AddDynamicOption(LexToString(120.f), FText::FromString(TEXT("120 FPS")));
+			FrameRateLimit->AddDynamicOption(LexToString(0.f), FText::FromString(TEXT("Unlimited")));
+			FrameRateLimit->SetDefaultValueFromString(LexToString(0.f));
+
+			FrameRateLimit->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetFrameRateLimit));
+			FrameRateLimit->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetFrameRateLimit));
+			FrameRateLimit->SetShouldApplyChangeImmediately(true);
+
+
+			AdvancedGraphicsCategoryCollection->AddChildListData(FrameRateLimit);
 		}
 
 	}
-
-	RegisteredOptionsTabCollections.Add(VideoTabCollection);
 }
 
 void UOptionsDataRegistry::InitControlCollectionTab()
