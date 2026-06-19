@@ -24,8 +24,8 @@ public:
 
 	}
 
-	FString GetDisabledReason() const { return DisabledRichReason; }
-	void SetDisabledReason(const FString& InRichReason) { DisabledRichReason = InRichReason; }
+	FString GetDisabledRichReason() const { return DisabledRichReason; }
+	void SetDisabledRichReason(const FString& InRichReason) { DisabledRichReason = InRichReason; }
 
 	bool HasForcedDisabledValue() const { return DisabledForcedStringValue.IsSet(); }
 	FString GetDisabledForcedStringValue() const { return DisabledForcedStringValue.GetValue(); }

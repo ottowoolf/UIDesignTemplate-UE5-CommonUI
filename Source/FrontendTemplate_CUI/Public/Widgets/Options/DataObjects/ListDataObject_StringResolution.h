@@ -17,6 +17,8 @@ class FRONTENDTEMPLATE_CUI_API UListDataObject_StringResolution : public UListDa
 public:
 	void InitStringResolutionValues();
 
+	FORCEINLINE FString GetMaximumAllowedResolution() const { return MaximumAllowedResolution; }
+
 protected:
 
 	//~Begin UListDataObject_String Interface

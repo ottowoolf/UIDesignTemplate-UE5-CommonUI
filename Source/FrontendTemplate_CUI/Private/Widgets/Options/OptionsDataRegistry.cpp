@@ -110,29 +110,6 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 		GameplayTabCollection->AddChildListData(GameDifficulty);
 	}
 
-	//Test Item
-	{
-		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
-		TestItem->SetDataID(FName("TestItem"));
-		TestItem->SetDataDisplayName(FText::FromString("Test Image Item"));
-		TestItem->SetSoftDescriptionImage(UFrontendFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage));
-		TestItem->SetDescriptionRichText(FText::FromString(TEXT("This is a test item to show how to use the soft image in the description. The image should be visible above this text.")));
-
-		GameplayTabCollection->AddChildListData(TestItem);
-
-	}
-
-	//Test Item 2
-	{
-		UListDataObject_String* TestItem2 = NewObject<UListDataObject_String>();
-		TestItem2->SetDataID(FName("TestItem2"));
-		TestItem2->SetDataDisplayName(FText::FromString("Test Image Item 2"));
-		TestItem2->SetSoftDescriptionImage(UFrontendFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage2));
-		TestItem2->SetDescriptionRichText(FText::FromString(TEXT("This is a test item to show how to use the soft image in the description. The image should be visible above this text.")));
-		GameplayTabCollection->AddChildListData(TestItem2);
-
-	}
-
 	RegisteredOptionsTabCollections.Add(GameplayTabCollection);
 }
 
@@ -260,6 +237,8 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 	VideoTabCollection->SetDataID(FName("VideoTabCollection"));
 	VideoTabCollection->SetDataDisplayName(FText::FromString(TEXT("Video")));
 
+	UListDataObject_StringEnum* CreatedWindowMode = nullptr;
+
 	// Display Category
 	{
 		UListDataObject_Collection* DisplayCategoryCollection = NewObject<UListDataObject_Collection>();
@@ -267,6 +246,17 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 		DisplayCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Display")));
 
 		VideoTabCollection->AddChildListData(DisplayCategoryCollection);
+
+		FOptionsDataEditConditionDescriptor PackagedBuildOnlyCondition;
+		PackagedBuildOnlyCondition.SetEditConditionFunc(
+			[]() -> bool
+			{
+				const bool bIsInEditor = GIsEditor || GIsPlayInEditorWorld;
+				return !bIsInEditor;
+			}
+		);
+
+		PackagedBuildOnlyCondition.SetDisabledRichReason(TEXT("\n\n<Disabled>This option is only available in packaged builds.</>"));
 
 		// Window Mode
 		{
@@ -284,6 +274,10 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			WindowMode->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetFullscreenMode));
 			WindowMode->SetShouldApplyChangeImmediately(true);
 
+			WindowMode->AddEditCondition(PackagedBuildOnlyCondition);
+
+			CreatedWindowMode = WindowMode;
+
 			DisplayCategoryCollection->AddChildListData(WindowMode);
 		}
 
@@ -299,8 +293,73 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 			ScreenResolution->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetScreenResolution));
 			ScreenResolution->SetShouldApplyChangeImmediately(true);
 
+			ScreenResolution->AddEditCondition(PackagedBuildOnlyCondition);
+
+			FOptionsDataEditConditionDescriptor WindowedModeEditCondition;
+			WindowedModeEditCondition.SetEditConditionFunc(
+				[CreatedWindowMode]() -> bool
+				{ const bool bIsBorderlessWindow = CreatedWindowMode->GetCurrentValueAsEnum<EWindowMode::Type>() == EWindowMode::WindowedFullscreen;
+			return !bIsBorderlessWindow;
+				}
+			);
+
+			WindowedModeEditCondition.SetDisabledRichReason(TEXT("\n\n<Disabled> Screen resolution cannot be changed in borderless window mode. The maximum allowed resolution is enforced.</>"));
+			WindowedModeEditCondition.SetDisabledForcedStringValue(ScreenResolution->GetMaximumAllowedResolution());
+
+			ScreenResolution->AddEditCondition(WindowedModeEditCondition);
+
+			ScreenResolution->AddEditDependencyData(CreatedWindowMode);
 			DisplayCategoryCollection->AddChildListData(ScreenResolution);
 		}
+	}
+
+	// Graphics Category
+	{
+		UListDataObject_Collection* GraphicsCategoryCollection = NewObject<UListDataObject_Collection>();
+		GraphicsCategoryCollection->SetDataID(FName("GraphicsCategoryCollection"));
+		GraphicsCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Graphics")));
+		GraphicsCategoryCollection->SetDescriptionRichText(FText::FromString(TEXT("Graphics settings can have a significant impact on game performance. Adjust these settings to find the right balance between visual quality and performance for your system.")));
+
+		VideoTabCollection->AddChildListData(GraphicsCategoryCollection);
+
+		// Display Gamma
+		{
+			UListDataObject_Scalar* DisplayGamma = NewObject<UListDataObject_Scalar>();
+			DisplayGamma->SetDataID(FName("DisplayGamma"));
+			DisplayGamma->SetDataDisplayName(FText::FromString(TEXT("Brightness")));
+			DisplayGamma->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the display brightness, to affect the overall visual clarity of the game.")));
+
+			DisplayGamma->SetDisplayValueRange(TRange<float>(0.f, 1.f));
+			DisplayGamma->SetOutputValueRange(TRange<float>(1.7f, 2.7f)); //The default value in unreal is 2.2, so we set the output range to be around that default value.
+			DisplayGamma->SetDisplayNumericType(ECommonNumericType::Percentage);
+			DisplayGamma->SetNumberFormattingOptions(UListDataObject_Scalar::NoDecimal());
+			DisplayGamma->SetSliderStepSize(0.1f);
+			DisplayGamma->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentDisplayGamma));
+			DisplayGamma->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentDisplayGamma));
+			DisplayGamma->SetDefaultValueFromString(LexToString(2.2f));
+			DisplayGamma->SetShouldApplyChangeImmediately(true);
+
+			GraphicsCategoryCollection->AddChildListData(DisplayGamma);
+		}
+
+		// Quality Preset
+		{
+			UListDataObject_StringInteger* QualityPreset = NewObject<UListDataObject_StringInteger>();
+			QualityPreset->SetDataID(FName("QualityPreset"));
+			QualityPreset->SetDataDisplayName(FText::FromString(TEXT("Quality Preset")));
+			QualityPreset->SetDescriptionRichText(FText::FromString(TEXT("Sets the graphics quality preset for the game.")));
+			QualityPreset->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			QualityPreset->AddIntegerOption(1, FText::FromString(TEXT("Medium")));
+			QualityPreset->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			QualityPreset->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			QualityPreset->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			QualityPreset->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetOverallScalabilityLevel));
+			QualityPreset->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetOverallScalabilityLevel));
+			QualityPreset->SetShouldApplyChangeImmediately(true);
+
+			GraphicsCategoryCollection->AddChildListData(QualityPreset);
+		}
+
 	}
 
 	RegisteredOptionsTabCollections.Add(VideoTabCollection);

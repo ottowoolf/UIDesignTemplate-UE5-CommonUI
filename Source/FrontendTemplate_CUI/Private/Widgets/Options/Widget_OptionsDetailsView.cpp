@@ -31,7 +31,7 @@ void UWidget_OptionsDetailsView::UpdateDetailsViewInfo(UListDataObject_Base* InD
 	const FString DynamicDetails = FString::Printf(TEXT("Data Object Class: <Bold>%s</>\n\nEntry Widget Class: <Bold>%s</>"), *InDataObject->GetClass()->GetName(), *InEntryWidgetClassName);
 	CommonRichTextBlock_DynamicDetails->SetText(FText::FromString(DynamicDetails));
 
-	CommonRichTextBlock_DisabledReason->SetText(InDataObject->GetDisabledRichText());
+	CommonRichTextBlock_DisabledReason->SetText(InDataObject->IsDataCurrentlyEditable() ? FText::GetEmpty() : InDataObject->GetDisabledRichText());
 
 }
 
