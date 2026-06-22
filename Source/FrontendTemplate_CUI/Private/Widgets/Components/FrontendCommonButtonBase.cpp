@@ -4,6 +4,7 @@
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "CommonTextBlock.h"
 #include "Subsystems/FrontendUISubsystem.h"
+#include "CommonLazyImage.h"
 
 void UFrontendCommonButtonBase::SetButtonText(FText InText)
 {
@@ -21,6 +22,14 @@ FText UFrontendCommonButtonBase::GetButtonDisplayText()
 	}
 
 	return FText();
+}
+
+void UFrontendCommonButtonBase::SetButtonDisplayImage(const FSlateBrush& InBrush)
+{
+	if (CommonLazyImage_ButtonImage)
+	{
+		CommonLazyImage_ButtonImage->SetBrush(InBrush);
+	}
 }
 
 void UFrontendCommonButtonBase::NativePreConstruct()
