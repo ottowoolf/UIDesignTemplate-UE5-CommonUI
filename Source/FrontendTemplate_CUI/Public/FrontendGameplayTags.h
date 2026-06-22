@@ -19,6 +19,8 @@ namespace FrontendGameplayTags
 	FRONTENDTEMPLATE_CUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_OptionsScreen);
 
 	FRONTENDTEMPLATE_CUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_ConfirmScreen);
+	FRONTENDTEMPLATE_CUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN
+	(Frontend_Widget_KeyRemapScreen);
 
 
 	// Frontend Options Image Tags
