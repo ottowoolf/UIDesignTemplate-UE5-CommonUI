@@ -57,6 +57,11 @@ public:
 	//Gets called outside of the class when this widget is constructed and before it's pushed to the widget stack. Use this to set up the widget based on the button info struct passed in.
 	void InitConfirmScreen(const UConfirmScreenInfoObject* InScreenInfoObject, TFunction<void(EConfirmScreenButtonType)> ClickButtonCallback);
 
+protected:
+	//~ Betgin UCommonActivatableWidget Interface
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+	//~ End UCommonActivatableWidget Interface
+	
 private:
 	UPROPERTY(meta = (BindWidget))
 	UCommonTextBlock* CommonTextBlock_Title;

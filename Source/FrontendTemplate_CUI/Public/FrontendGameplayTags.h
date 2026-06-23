@@ -26,5 +26,6 @@ namespace FrontendGameplayTags
 	// Frontend Options Image Tags
 	FRONTENDTEMPLATE_CUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Image_TestImage);
 	FRONTENDTEMPLATE_CUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Image_TestImage2);
+	FRONTENDTEMPLATE_CUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Image_Controller);
 
 }

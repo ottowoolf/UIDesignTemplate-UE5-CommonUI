@@ -22,5 +22,6 @@ namespace FrontendGameplayTags
 	// Frontend Options Image Tags
 	UE_DEFINE_GAMEPLAY_TAG(Frontend_Image_TestImage, "Frontend.Image.TestImage");
 	UE_DEFINE_GAMEPLAY_TAG(Frontend_Image_TestImage2, "Frontend.Image.TestImage2");
+	UE_DEFINE_GAMEPLAY_TAG(Frontend_Image_Controller, "Frontend.Image.Controller");
 
 }
