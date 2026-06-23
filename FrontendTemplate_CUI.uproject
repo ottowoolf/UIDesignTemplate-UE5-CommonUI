@@ -32,6 +32,10 @@
 		{
 			"Name": "AIAssistant",
 			"Enabled": true
+		},
+		{
+			"Name": "MediaMovieStreamer",
+			"Enabled": true
 		}
 	]
 }
